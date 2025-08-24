@@ -231,9 +231,24 @@ void DebugHelper::logMessage(FString s, int a){
 	logMessage(s);
 }
 
+void DebugHelper::logMessageFloat(FString s, float a){
+	s += TEXT(" ");
+	FString iTostring = FString::Printf(TEXT("%.2f"), a);
+	s += iTostring;
+
+	logMessage(s);
+}
+
+
+
 void DebugHelper::logMessage(FString s, FVector a){
 	s += TEXT(" ");
 	s += FVectorToString(a);
+	logMessage(s);
+}
+
+void DebugHelper::logMessage(FString s, FString t){
+	s += t;
 	logMessage(s);
 }
 

@@ -121,21 +121,18 @@ int FVectorUtil::randomNumber(int range){
 }
 
 int FVectorUtil::randomNumber(int lower, int higher){
-    int a = std::rand();
-    a %= higher;
-    if(lower < 0 && a > 0){
-        if(a < std::abs(lower)){
-            int neg = std::rand();
-            if(neg % 2 == 0){
-                a *= -1;
-            }
-        }
+    if(higher == lower){
+        return lower;
     }
-    if (a < lower) //clamp lower bound
-    {
-        return lower + a;
-    }
-    return a;
+    int l = lower;
+    int h = higher;
+    lower = std::min(l, h);
+    higher = std::max(l, h);
+
+    int random = std::rand();
+    int range = std::abs(h - l) + 1;
+    random %= range;
+    return lower + random;
 }
 
 

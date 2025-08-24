@@ -26,10 +26,10 @@ bool priorityList::hasNodes(){
 
 /// @brief returns the lowest fx pathfinder node
 /// @return returns the lowest fx pathfinder node
-PathFinder::Node *priorityList::popLowestFx(){
+APathFinder::Node *priorityList::popLowestFx(){
 
     if(nodes.size() > 0){
-        PathFinder::Node *lowest = nodes.back();
+        APathFinder::Node *lowest = nodes.back();
         //remove from list
         nodes.erase(nodes.begin() + nodes.size() - 1);
         return lowest;
@@ -40,7 +40,7 @@ PathFinder::Node *priorityList::popLowestFx(){
 
 /// @brief adds a path finder node to the priority queue
 /// @param n 
-void priorityList::add(PathFinder::Node *n){
+void priorityList::add(APathFinder::Node *n){
     if(n != nullptr){
         float fxToAdd = n->fx;
 

@@ -33,8 +33,8 @@ raycastTask &raycastTask::operator=(const raycastTask &other){
 
 void raycastTask::setup(
     UWorld *world,
-    PathFinder::Node *aIn,
-    PathFinder::Node *bIn
+    APathFinder::Node *aIn,
+    APathFinder::Node *bIn
 ){
     worldPointer = world;
     a = aIn;
@@ -59,7 +59,7 @@ void raycastTask::execute(){
 
 bool raycastTask::passTangentialCheck(){
     if(a != nullptr && b != nullptr){
-        PathFinder *instance = PathFinder::instance();
+        APathFinder *instance = APathFinder::instance();
         if(instance != nullptr){
             return instance->passTangentailCheck(a, b);
         }
@@ -79,7 +79,7 @@ bool raycastTask::syncRaycastCanSee(){
 
         //add params from entity manager (contains all bots for example, which can be ignored)
         //part of a bigger context im working on, comment out or provide your own params
-        if(PathFinder *e = PathFinder::instance()){
+        if(APathFinder *e = APathFinder::instance()){
             Params = e->getIgnoredRaycastParams();
         }
         Params.bTraceComplex = false; // HIER LOWER RAYCAST DETAIL-> FASTER

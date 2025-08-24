@@ -15,8 +15,8 @@ public:
 
     void setup(
         UWorld *world,
-        PathFinder::Node *aIn,
-        PathFinder::Node *bIn
+        APathFinder::Node *aIn,
+        APathFinder::Node *bIn
     );
 
     void execute();
@@ -26,8 +26,8 @@ private:
     bool syncRaycastCanSee();
 
     UWorld *worldPointer = nullptr;
-    PathFinder::Node *a = nullptr;
-    PathFinder::Node *b = nullptr;
+    APathFinder::Node *a = nullptr;
+    APathFinder::Node *b = nullptr;
 
     bool wasExecuted = false;
 

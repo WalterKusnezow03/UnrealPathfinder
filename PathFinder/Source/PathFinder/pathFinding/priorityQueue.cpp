@@ -16,7 +16,7 @@ priorityQueue::~priorityQueue()
 
 /// @brief will freshly add a node OR bubble up the node if existent!
 /// @param node node to add or refresh
-void priorityQueue::add(PathFinder::Node *node){
+void priorityQueue::add(APathFinder::Node *node){
     if(node != nullptr){
         //(am letzten index einfügen, bubble up)
         // solange das über mir grösser ist, swap
@@ -48,11 +48,11 @@ void priorityQueue::bubbleUpfrom(int index){
 
         
         while (parentIndex >= 0){
-            PathFinder::Node *parentNode = nodes.at(parentIndex);
+            APathFinder::Node *parentNode = nodes.at(parentIndex);
             if(parentNode != nullptr){
                 if(parentNode->fx > copyfx){
                     //swap
-                    PathFinder::Node *tmp = parentNode;
+                    APathFinder::Node *tmp = parentNode;
                     nodes.at(parentIndex) = nodes.at(index);
                     nodes.at(index) = tmp;
 
@@ -83,9 +83,9 @@ void priorityQueue::bubbleUpfrom(int index){
 
 
 
-PathFinder::Node *priorityQueue::popLowestFx(){
+APathFinder::Node *priorityQueue::popLowestFx(){
     if(hasNodes()){
-        PathFinder::Node *front = nodes.front();
+        APathFinder::Node *front = nodes.front();
         //remove from index map
         if(front != nullptr){
             indexMap.erase(front);
@@ -145,7 +145,7 @@ void priorityQueue::downheap(){
         //parent fx is larger than smaller childs fx
         if(nodes.at(parentIndex)->fx > nodes.at(lowerIndex)->fx){
             //swap
-            PathFinder::Node *parentCopy = nodes.at(parentIndex);
+            APathFinder::Node *parentCopy = nodes.at(parentIndex);
             nodes.at(parentIndex) = nodes.at(lowerIndex);
             nodes.at(lowerIndex) = parentCopy;
 
@@ -177,7 +177,7 @@ void priorityQueue::show(){
         FString breakN = TEXT(" - ");
         for (int i = 0; i < nodes.size(); i++)
         {
-            PathFinder::Node *n = nodes.at(i);
+            APathFinder::Node *n = nodes.at(i);
             if(n != nullptr){
                 output += FString::Printf(TEXT("%.2f"), nodes.at(i)->fx);
                 output += breakN;

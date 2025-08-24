@@ -15,21 +15,21 @@ public:
 	priorityQueue();
 	~priorityQueue();
 
-	void add(PathFinder::Node *node);
-	PathFinder::Node *popLowestFx();
+	void add(APathFinder::Node *node);
+	APathFinder::Node *popLowestFx();
 
 	bool hasNodes();
 
 	void show();
 
 private:
-	std::vector<PathFinder::Node *> nodes;
+	std::vector<APathFinder::Node *> nodes;
 	void downheap();
 	void bubbleUpfrom(int index);
 
 	/// @brief saves the index in the vector for a node
 	/// to bubble up nodes if they are refreshed 
-	std::map<PathFinder::Node *, int> indexMap;
+	std::map<APathFinder::Node *, int> indexMap;
 
 	bool showScreenLog = false;
 };

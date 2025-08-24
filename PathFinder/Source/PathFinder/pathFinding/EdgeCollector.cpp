@@ -286,7 +286,7 @@ void EdgeCollector::getEdgesFromSingleMesh(
     for (int i = 0; i < currentEdges.size(); i++){
         toPosVec.push_back(currentEdges.at(i).bottom);
     }
-    if(PathFinder *f = PathFinder::instance(worldIn)){
+    if(APathFinder *f = APathFinder::instance(worldIn)){
         f->addConvexHull(toPosVec);
     }
     return;

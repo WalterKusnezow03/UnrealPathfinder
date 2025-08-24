@@ -13,6 +13,6 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	static void StartPathFinder(UWorld *world);
-	static void EndPathFinder();
+	static void StartPathFinder(UWorld *world, FString worldLevelName);
+
 };

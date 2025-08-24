@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include <map>
+#include "PathFinder.generated.h"
 
 class raycastTask;
 
 /**
- * a modified a* version 
+ * a modified a* version with tangential checks along convex polygons for minimzed graphs.
+ * Nodes are found in O(1)!
  * 
  * 2 modes:
  * 
@@ -25,18 +28,47 @@ class raycastTask;
  * will automatically connect nodes, reduces runtime overhead because minimal tangential graph is already build
  * 
  */
-class PATHFINDER_API PathFinder
+
+UCLASS()
+class PATHFINDER_API APathFinder : public AActor
 {
+	GENERATED_BODY()
+
 public:
+	//---- Launch API ----
+	APathFinder();
+	static void makeInstance(UWorld *world, FString worldLevelName); // CALL TO LAUNCH
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void Tick(float deltatime) override;
+
+private:
+	static void resetPathFinderPointer();
+	static bool alreadyHasInstance();
+	void Setup(FString worldname);
+
+	static class APathFinder *pathFinderInstance;
+
+	FString worldLevelNameSaved;
+
+	std::vector<FVector> prevPath;
+	static constexpr int CHUNKSIZE = 2000; // 1m = 100, 20m = 2000
+	static constexpr int ONE_METER = 70; //distance to keep between nodes
+	static int countNodes;
+
+public:
+
+
+
 	static const bool debugDrawNodes = true; //false
 
-	~PathFinder();
+	
 
 	FCollisionQueryParams collsionParamsLowDetailAndFast();
 
-	static PathFinder *instance(UWorld *worldIn);
-	static PathFinder *instance();
-	static void deleteInstance();
+	static APathFinder *instance(UWorld *worldIn);
+	static APathFinder *instance();
+	//static void deleteInstance();
 
 	void debugShowAllNodes(UWorld *world);
 
@@ -68,11 +100,17 @@ public:
 			/// @brief will tell if the node is closed (on the closed list) or not
 			bool closedFlag;
 			/// @brief came from neighbor
-			PathFinder::Node *camefrom = nullptr;
+			APathFinder::Node *camefrom = nullptr;
 			float fx;
 			float gx;
 			FVector pos;
-			Node(FVector posIn);
+
+			
+			
+
+			Node(FVector posIn); //no id: setup needed
+			Node(int id, FVector posIn); //id from storage
+
 			Node(Node &other);
 			Node &operator=(Node &other);
 
@@ -88,8 +126,9 @@ public:
 			void setConvexNeighborB(Node *n);
 			void addTangentialNeighbor(Node *n);
 
-			PathFinder::Node *nA = nullptr;
-			PathFinder::Node *nB = nullptr;
+			//convex neighbors A and B
+			APathFinder::Node *nA = nullptr;
+			APathFinder::Node *nB = nullptr;
 
 			bool hasNeighbors(); //convex hull neighbors
 			bool hasAnyNeighbors(); //any visible neighbors 
@@ -102,11 +141,25 @@ public:
 
 			void show(UWorld *world);
 
+			//storage interface helpers
+			void setId(int id);
+			int getId();
+
+			//only returns valid ids
+			TArray<int> NeighborsById();
+
+			//returns -1 if not valid
+			int IdConvexNeighborA();
+			int IdConvexNeighborB();
+
 		private:
 			FCriticalSection CriticalSection;
+
+			//id system for saving
+			int id = -1; //is invalid by default, not tracked in storage.
 	};
 
-	void addNode(PathFinder::Node *node);
+	void addNode(APathFinder::Node *node);
 	
 	void debugCountNodes();
 
@@ -115,21 +168,12 @@ public:
 	bool passTangentailCheck(Node *a, Node *b);
 
 private:
-	std::vector<FVector> prevPath;
-
-	bool reached(PathFinder::Node *a, PathFinder::Node *b);
 	
 
-	static constexpr int CHUNKSIZE = 2000; // 1m = 100, 20m = 2000
-	static constexpr int ONE_METER = 70; //distance to keep between nodes
-
-	PathFinder(UWorld *worldIn);
-	class UWorld *worldPointer;
-
-	static class PathFinder *pathFinderInstance;
+	bool reached(APathFinder::Node *a, APathFinder::Node *b);
 	
-	static int countNodes;
 
+	
 	void screenMessage(int s);
 	void screenMessage(FString s);
 
@@ -137,20 +181,25 @@ private:
 		public:
 			/// @brief is a vector of pointers in case the vector is copied internally
 			/// and nodes must stay active while path finding
-			std::vector<PathFinder::Node*> nodes;
+			std::vector<APathFinder::Node*> nodes;
 			Chunk();
 			~Chunk();
 			void add(FVector vec);
 			void add(Node *node);
-			std::vector<PathFinder::Node *> &getNodes();
-			PathFinder::Node *findNode(FVector pos);
-			PathFinder::Node *findNodeInDirection(FVector &node, FVector &dir);
+
+			//add a node without connecting it.
+			//designed to be called when using storage
+			void addNoConnect(Node *node);
+
+			std::vector<APathFinder::Node *> &getNodes();
+			APathFinder::Node *findNode(FVector pos);
+			APathFinder::Node *findNodeInDirection(FVector &node, FVector &dir);
 
 			bool hasNode(FVector pos);
 
 			void clear();
 
-			PathFinder::Node *lateadd(FVector pos);
+			APathFinder::Node *lateadd(FVector pos);
 
 			void debugShowAllNodes(UWorld *world);
 
@@ -164,18 +213,22 @@ private:
 			int ySample;
 
 		public:
-			std::vector<std::vector<PathFinder::Chunk*>> map;
+			std::vector<std::vector<APathFinder::Chunk*>> map;
 			Quadrant(int xSampleIn, int zSampleIn);
 			~Quadrant();
 
 			Node *findNode(FVector pos);
 			Node *findNodeInDirection(FVector &node, FVector &dir);
-			std::vector<PathFinder::Node *> nodesEnClosedBy(float xA, float zA, float xB, float zB);
+			std::vector<APathFinder::Node *> nodesEnClosedBy(float xA, float zA, float xB, float zB);
 
-			std::vector<PathFinder::Node *> askForArea(FVector a, FVector b);
+			std::vector<APathFinder::Node *> askForArea(FVector a, FVector b);
 
 			void add(FVector n);
 			void add(Node *node);
+
+			//add a new node without connection
+			//designed to be called when using storage
+			void addNoConnect(Node *node);
 
 			void clear();
 
@@ -192,6 +245,8 @@ private:
 	class Quadrant *BottomLeft;
 
 	Quadrant *askforQuadrant(int xIndex, int zIndex);
+
+	//A node is Found in O(1)!
 	Node *findNode(FVector pos);
 	Node *findNodeInDirection(FVector &node, FVector &dir);
 
@@ -206,19 +261,19 @@ private:
 
 	
 
-	std::vector<PathFinder::Node *> getSubGraph(FVector a, FVector b);
+	std::vector<APathFinder::Node *> getSubGraph(FVector a, FVector b);
 
 	std::vector<FVector> findPath(
 		Node *start,
 		Node *end,
-		std::vector<PathFinder::Node *> &subgraph
+		std::vector<APathFinder::Node *> &subgraph
 	);
 
 	std::vector<FVector> constructPath(
 		Node *end
 	);
 
-	bool canSeeTangential(PathFinder::Node *A, PathFinder::Node *B);
+	bool canSeeTangential(APathFinder::Node *A, APathFinder::Node *B);
 	bool canSee(FVector &a, FVector &b);
 
 	bool isCloseAndTooVertical(Node *a, Node *b);
@@ -231,7 +286,7 @@ private:
 	/// @brief will tell whether the raycast for adding nodes will be async or an synchron operation
 	static constexpr bool ASYNC_EDGE_PREBUILDING = true;
 	static constexpr int PREBUILD_MAXDISTANCE = 5000; // 10000 / 100 = 100 meter, keep to 50.
-	void connect(PathFinder::Node *node);
+	void connect(APathFinder::Node *node);
 	void asyncCanSee(Node *a, Node *b);
 
 	std::vector<FVector> findPath_prebuildEdges(
@@ -239,25 +294,8 @@ private:
 		Node *end
 	);
 
-	bool isInBounds(FVector &a, FVector &b, PathFinder::Node *check);
+	bool isInBounds(FVector &a, FVector &b, APathFinder::Node *check);
 
-	/*
-	class ConvexPolygon{
-		public:
-			ConvexPolygon(std::vector<PathFinder::Node *> &nodes);
-			~ConvexPolygon();
-			std::vector<PathFinder::Node *> nodes; // must be sorted properly from conex hull
-			//2D vector for nodes which can see each other in one row
-			//std::vector<std::vector<PathFinder::Node *>> nodes
-			std::vector<FVector> findFastPathOnHull(Node *a, Node *b);
-	};
-
-
-	
-	
-
-	std::vector<PathFinder::ConvexPolygon *> polygonstmp; //will store polygons here for now
-	*/
 
 	FCriticalSection fillQuadrant_CriticalSection;
 	FCriticalSection delegate_CriticalSection_a; 
@@ -273,10 +311,7 @@ public:
 
 	PathTraceMode traceMode = PathTraceMode::AsyncTrace;
 
-	//::AsyncTrace;
 
-	//NEW
-	void Tick();
 
 	void addActorToIgnoreRaycastParams(AActor *actor);
 	FCollisionQueryParams getIgnoredRaycastParams();
@@ -288,4 +323,46 @@ private:
 
 	//ignored actors
 	FCollisionQueryParams collisionIgnoreParams;
+
+
+
+
+	// --- STORAGE INTERFACE ---
+
+	//map to save by id: load and save
+	//static id must start from 0, -1 is a non available node as convex partner
+	int staticId = 0;
+
+	//save nodes by id to save adjacent nodes relation by id.
+	std::map<int, Node *> idMappedNodes;
+
+	//will track the node inside the id map
+	void TrackNodeInIdMap(APathFinder::Node *node);
+
+	//will return whether a node is tracked in the id map
+	bool NodeIsTrackedInIdMap(int id);
+
+public:
+	static bool IdIsValid(int id);
+
+	//adds a node to the graph without connecting it at all
+	//is only saved if id is valid
+	void addNodeFromStorageInterfaceNoConnection(FVector &pos, int id);
+
+	//adds all connections and convex neighbors to a given node by id - if id is valid
+	void addConnectionsFromStorageInterfaceForNodeById(
+		int id,
+		TArray<int> connected,
+		int convexA,
+		int convexB
+	);
+
+	//returns the count of nodes which supposed to be saved
+	int countNodesTrackedInIdMap();
+
+	const std::map<int, APathFinder::Node *> &IdMapReference();
+
+	// --- STORAGE INTERFACE Section End ---
+
+
 };

@@ -34,9 +34,11 @@ public:
 	//Log Messages
 	static void logMessage(FString s);
 	static void logMessage(FString s, int a);
+	static void logMessageFloat(FString s, float a);
 	static void logMessage(FString s, FRotator other);
 	static void logMessage(FString s, FVector a, FVector b);
 	static void logMessage(FString s, FVector a);
+	static void logMessage(FString s, FString t);
 	static FString FVectorToString(FVector vec);
 
 	//time

@@ -20,31 +20,17 @@ void FPathFinderModule::ShutdownModule()
 /**
  * ATTENTION: PathFinder Collect edges will only be called from this class and only once on level start
  */
-void FPathFinderModule::StartPathFinder(UWorld *world){
+void FPathFinderModule::StartPathFinder(UWorld *world, FString worldName){
 	if(world == nullptr){
 		return;
 	}
+	APathFinder::makeInstance(world, worldName);
 
-	if (world)
-	{
-		EdgeCollector c = EdgeCollector();
-		c.getAllEdges(world); //pushes them to the navmesh on its own
-	}
+	EdgeCollector c = EdgeCollector();
+	c.getAllEdges(world); //pushes them to the navmesh on its own
+	
 }
 
-void FPathFinderModule::EndPathFinder(){
-	//clears all nodes from graph
-    PathFinder *p = PathFinder::instance();
-    if (p != nullptr)
-    {
-        //p->clear();
-
-        p->deleteInstance();
-
-        FString s = FString::Printf(TEXT("debug end play: deleted path finder"));
-        DebugHelper::logMessage(s);
-    }
-}
 
 
 

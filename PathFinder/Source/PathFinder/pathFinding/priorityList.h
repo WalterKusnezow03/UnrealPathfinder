@@ -14,8 +14,8 @@ public:
 	priorityList();
 	~priorityList();
 
-	void add(PathFinder::Node *node);
-	PathFinder::Node *popLowestFx();
+	void add(APathFinder::Node *node);
+	APathFinder::Node *popLowestFx();
 
 	bool hasNodes();
 
@@ -23,6 +23,6 @@ public:
 
 private:
 	
-	std::vector<PathFinder::Node *> nodes;
+	std::vector<APathFinder::Node *> nodes;
 
 };
